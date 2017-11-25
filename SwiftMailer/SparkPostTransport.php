@@ -100,6 +100,7 @@ class SparkPostTransport implements Swift_Transport
         if ($this->apiKey === null) {
             throw new \Swift_TransportException('Cannot create instance of \SparkPost\SparkPost while API key is NULL');
         }
+
         return new SparkPost(
             new GuzzleAdapter(new Client()),
             ['key' => $this->apiKey]

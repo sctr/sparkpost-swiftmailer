@@ -1,6 +1,6 @@
 <?php
 
-namespace SlowProg\SparkPostSwiftMailer\SwiftMailer;
+namespace Sctr\SparkPostSwiftMailer\SwiftMailer;
 
 use SparkPost\SparkPost;
 use GuzzleHttp\Client;
@@ -16,7 +16,6 @@ use \Swift_MimePart;
 
 class SparkPostTransport implements Swift_Transport
 {
-
     /**
      * @type Swift_Events_EventDispatcher
      */

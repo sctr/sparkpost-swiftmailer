@@ -5,7 +5,7 @@ A SwiftMailer transport implementation for SparkPost
 
 Require the package with composer
 
-    composer require slowprog/sparkpost-swiftmailer
+    composer require sctr/sparkpost-swiftmailer
 
 ## Usage
 

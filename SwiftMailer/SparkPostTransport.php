@@ -126,10 +126,8 @@ class SparkPostTransport implements Swift_Transport
         $sendCount = 0;
 
         $sparkPostMessage = $this->getSparkPostMessage($message);
-
-        $sparkPost = $this->createSparkPost();
-
-        $promise= $sparkPost->transmissions->post($sparkPostMessage);
+        $sparkPost        = $this->createSparkPost();
+        $promise          = $sparkPost->transmissions->post($sparkPostMessage);
 
         try {
             $response        = $promise->wait();
@@ -317,8 +315,6 @@ class SparkPostTransport implements Swift_Transport
 
         $sparkPostMessage = [
             'recipients' => $recipients,
-            'reply_to'   => $reply_to,
-            'inline_css' => $inlineCss,
             'options'    => $options,
             'tags'       => $tags,
             'content'    => [
@@ -332,6 +328,9 @@ class SparkPostTransport implements Swift_Transport
             ],
         ];
 
+        if (!empty($reply_to)) {
+            $sparkPostMessage['content']['reply_to'] = $reply_to;
+        }
         if (!empty($cc)) {
             $sparkPostMessage['cc'] = $cc;
         }
@@ -344,6 +343,10 @@ class SparkPostTransport implements Swift_Transport
 
         if (count($attachments) > 0) {
             $sparkPostMessage['attachments'] = $attachments;
+        }
+
+        if ($message->getHeaders()->has('X-MC-CampainID')) {
+            $sparkPostMessage['campaign_id'] = $message->getHeaders()->get('X-MC-CampainID')->getValue();
         }
 
         return $sparkPostMessage;

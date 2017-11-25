@@ -10,7 +10,7 @@
  * @license     No License (Proprietary)
  */
 
-namespace Sctr\SparkPostSwiftMailer\SwiftMailer;
+namespace Sctr\SparkPostSwiftMailer;
 
 use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;

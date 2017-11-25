@@ -23,8 +23,10 @@
     "require-dev": {
         "phpunit/phpunit": "~4.5"
     },
-    "autoload": {
-       "psr-0": { "Sctr\\SparkPostSwiftMailer": "" }
+    "autoload":    {
+        "psr-4": {
+            "Sctr\\SparkPostSwiftMailer\\": "SwiftMailer/"
+        }
     },
     "target-dir": "Sctr/SparkPostSwiftMailer"
 }

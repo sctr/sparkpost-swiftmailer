@@ -1,23 +1,32 @@
 <?php
 
+/*
+ * Copyright 2017 SCTR Services
+ *
+ * Distribution and reproduction are prohibited.
+ *
+ * @package     sparkpost-swiftmailer
+ * @copyright   SCTR Services LLC 2017
+ * @license     No License (Proprietary)
+ */
+
 namespace Sctr\SparkPostSwiftMailer\SwiftMailer;
 
-use SparkPost\SparkPost;
 use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
-
-use \Swift_Events_EventDispatcher;
-use \Swift_Events_EventListener;
-use \Swift_Events_SendEvent;
-use \Swift_Mime_Message;
-use \Swift_Transport;
-use \Swift_Attachment;
-use \Swift_MimePart;
+use SparkPost\SparkPost;
+use Swift_Attachment;
+use Swift_Events_EventDispatcher;
+use Swift_Events_EventListener;
+use Swift_Events_SendEvent;
+use Swift_Mime_Message;
+use Swift_MimePart;
+use Swift_Transport;
 
 class SparkPostTransport implements Swift_Transport
 {
     /**
-     * @type Swift_Events_EventDispatcher
+     * @var Swift_Events_EventDispatcher
      */
     protected $dispatcher;
 
@@ -36,11 +45,11 @@ class SparkPostTransport implements Swift_Transport
     public function __construct(Swift_Events_EventDispatcher $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-        $this->apiKey = null;
+        $this->apiKey     = null;
     }
 
     /**
-     * Not used
+     * Not used.
      */
     public function isStarted()
     {
@@ -48,14 +57,14 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * Not used
+     * Not used.
      */
     public function start()
     {
     }
 
     /**
-     * Not used
+     * Not used.
      */
     public function stop()
     {
@@ -63,11 +72,13 @@ class SparkPostTransport implements Swift_Transport
 
     /**
      * @param string $apiKey
+     *
      * @return $this
      */
     public function setApiKey($apiKey)
     {
         $this->apiKey = $apiKey;
+
         return $this;
     }
 
@@ -80,14 +91,15 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * @return \SparkPost\SparkPost
      * @throws \Swift_TransportException
+     *
+     * @return \SparkPost\SparkPost
      */
     protected function createSparkPost()
     {
-        if ($this->apiKey === null)
+        if ($this->apiKey === null) {
             throw new \Swift_TransportException('Cannot create instance of \SparkPost\SparkPost while API key is NULL');
-
+        }
         return new SparkPost(
             new GuzzleAdapter(new Client()),
             ['key' => $this->apiKey]
@@ -96,7 +108,8 @@ class SparkPostTransport implements Swift_Transport
 
     /**
      * @param Swift_Mime_Message $message
-     * @param null $failedRecipients
+     * @param null               $failedRecipients
+     *
      * @return int Number of messages sent
      */
     public function send(Swift_Mime_Message $message, &$failedRecipients = null)
@@ -118,7 +131,7 @@ class SparkPostTransport implements Swift_Transport
         $promise= $sparkPost->transmissions->post($sparkPostMessage);
 
         try {
-            $response = $promise->wait();
+            $response        = $promise->wait();
             $this->resultApi = $response->getBody();
         } catch (\Exception $e) {
             throw $e;
@@ -156,14 +169,15 @@ class SparkPostTransport implements Swift_Transport
      */
     protected function getSupportedContentTypes()
     {
-        return array(
+        return [
             'text/plain',
-            'text/html'
-        );
+            'text/html',
+        ];
     }
 
     /**
      * @param string $contentType
+     *
      * @return bool
      */
     protected function supportsContentType($contentType)
@@ -173,13 +187,14 @@ class SparkPostTransport implements Swift_Transport
 
     /**
      * @param Swift_Mime_Message $message
+     *
      * @return string
      */
     protected function getMessagePrimaryContentType(Swift_Mime_Message $message)
     {
         $contentType = $message->getContentType();
 
-        if($this->supportsContentType($contentType)){
+        if ($this->supportsContentType($contentType)) {
             return $contentType;
         }
 
@@ -187,7 +202,7 @@ class SparkPostTransport implements Swift_Transport
         // as you add another part to the message. We need to access the protected property
         // _userContentType to get the original type.
         $messageRef = new \ReflectionClass($message);
-        if($messageRef->hasProperty('_userContentType')){
+        if ($messageRef->hasProperty('_userContentType')) {
             $propRef = $messageRef->getProperty('_userContentType');
             $propRef->setAccessible(true);
             $contentType = $propRef->getValue($message);
@@ -197,11 +212,13 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * https://jsapi.apiary.io/apis/sparkpostapi/introduction/subaccounts-coming-to-an-api-near-you-in-april!.html
+     * https://jsapi.apiary.io/apis/sparkpostapi/introduction/subaccounts-coming-to-an-api-near-you-in-april!.html.
      *
      * @param Swift_Mime_Message $message
-     * @return array SparkPost Send Message
+     *
      * @throws \Swift_SwiftException
+     *
+     * @return array SparkPost Send Message
      */
     public function getSparkPostMessage(Swift_Mime_Message $message)
     {
@@ -210,7 +227,7 @@ class SparkPostTransport implements Swift_Transport
         $fromEmails    = array_keys($fromAddresses);
 
         list($fromFirstEmail, $fromFirstName) = each($fromAddresses);
-        $this->fromEmail = $fromFirstEmail;
+        $this->fromEmail                      = $fromFirstEmail;
 
         $toAddresses      = $message->getTo();
         $ccAddresses      = $message->getCc() ? $message->getCc() : [];
@@ -225,24 +242,24 @@ class SparkPostTransport implements Swift_Transport
         $tags        = [];
         $options     = [];
 
-        if($message->getHeaders()->has('X-MC-Tags')){
+        if ($message->getHeaders()->has('X-MC-Tags')) {
             /** @var \Swift_Mime_Headers_UnstructuredHeader $tagsHeader */
             $tagsHeader = $message->getHeaders()->get('X-MC-Tags');
-            $tags = explode(',', $tagsHeader->getValue());
+            $tags       = explode(',', $tagsHeader->getValue());
         }
 
         foreach ($toAddresses as $toEmail => $toName) {
-            $recipients[] = array(
-                'address' => array(
+            $recipients[] = [
+                'address' => [
                     'email' => $toEmail,
                     'name'  => $toName,
-                ),
+                ],
                 'tags' => $tags,
-            );
+            ];
         }
         $reply_to = null;
         foreach ($replyToAddresses as $replyToEmail => $replyToName) {
-            if ($replyToName){
+            if ($replyToName) {
                 $reply_to= sprintf('%s <%s>', $replyToName, $replyToEmail);
             } else {
                 $reply_to = $replyToEmail;
@@ -250,43 +267,40 @@ class SparkPostTransport implements Swift_Transport
         }
 
         foreach ($ccAddresses as $ccEmail => $ccName) {
-            $cc[] = array(
+            $cc[] = [
                 'email' => $ccEmail,
                 'name'  => $ccName,
-            );
+            ];
         }
 
         foreach ($bccAddresses as $bccEmail => $bccName) {
-            $bcc[] = array(
+            $bcc[] = [
                 'email' => $bccEmail,
                 'name'  => $bccName,
-            );
+            ];
         }
 
         $bodyHtml = $bodyText = null;
 
-        if($contentType === 'text/plain'){
+        if ($contentType === 'text/plain') {
             $bodyText = $message->getBody();
-        }
-        elseif($contentType === 'text/html'){
+        } elseif ($contentType === 'text/html') {
             $bodyHtml = $message->getBody();
-        }
-        else{
+        } else {
             $bodyHtml = $message->getBody();
         }
 
         foreach ($message->getChildren() as $child) {
-
             if ($child instanceof Swift_Attachment) {
-                $attachments[] = array(
+                $attachments[] = [
                     'type'    => $child->getContentType(),
                     'name'    => $child->getFilename(),
-                    'data' => base64_encode($child->getBody())
-                );
+                    'data'    => base64_encode($child->getBody()),
+                ];
             } elseif ($child instanceof Swift_MimePart && $this->supportsContentType($child->getContentType())) {
-                if ($child->getContentType() == "text/html") {
+                if ($child->getContentType() == 'text/html') {
                     $bodyHtml = $child->getBody();
-                } elseif ($child->getContentType() == "text/plain") {
+                } elseif ($child->getContentType() == 'text/plain') {
                     $bodyText = $child->getBody();
                 }
             }
@@ -300,22 +314,22 @@ class SparkPostTransport implements Swift_Transport
             $options['inline_css'] = $message->getHeaders()->get('X-MC-InlineCSS')->getValue();
         }
 
-        $sparkPostMessage = array(
+        $sparkPostMessage = [
             'recipients' => $recipients,
             'reply_to'   => $reply_to,
             'inline_css' => $inlineCss,
             'options'    => $options,
             'tags'       => $tags,
-            'content'    => array (
-                'from' => array (
+            'content'    => [
+                'from' => [
                     'name'  => $fromFirstName,
                     'email' => $fromFirstEmail,
-                ),
+                ],
                 'subject' => $message->getSubject(),
                 'html'    => $bodyHtml,
                 'text'    => $bodyText,
-            ),
-        );
+            ],
+        ];
 
         if (!empty($cc)) {
             $sparkPostMessage['cc'] = $cc;
@@ -341,5 +355,4 @@ class SparkPostTransport implements Swift_Transport
     {
         return $this->resultApi;
     }
-
 }

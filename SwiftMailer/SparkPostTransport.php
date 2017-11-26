@@ -310,7 +310,11 @@ class SparkPostTransport implements Swift_Transport
         }
 
         if ($message->getHeaders()->has('X-MC-InlineCSS')) {
-            $options['inline_css'] = $message->getHeaders()->get('X-MC-InlineCSS')->getValue();
+            $options['inline_css'] = !empty($message->getHeaders()->get('X-MC-InlineCSS')->getValue()) ? true : false;
+        }
+
+        if ($message->getHeaders()->has('X-MC-Transactional')) {
+            $options['transactional'] = !empty($message->getHeaders()->get('X-MC-Transactional')->getValue()) ? true : false;
         }
 
         $sparkPostMessage = [
@@ -342,7 +346,7 @@ class SparkPostTransport implements Swift_Transport
         }
 
         if (count($attachments) > 0) {
-            $sparkPostMessage['attachments'] = $attachments;
+            $sparkPostMessage['content']['attachments'] = $attachments;
         }
 
         if ($message->getHeaders()->has('X-MC-CampainID')) {

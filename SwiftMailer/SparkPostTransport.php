@@ -319,7 +319,6 @@ class SparkPostTransport implements Swift_Transport
 
         $sparkPostMessage = [
             'recipients' => $recipients,
-            'options'    => $options,
             'tags'       => $tags,
             'content'    => [
                 'from' => [
@@ -332,6 +331,9 @@ class SparkPostTransport implements Swift_Transport
             ],
         ];
 
+        if (count($options) > 0) {
+            $sparkPostMessage['options'] = $options;
+        }
         if (!empty($reply_to)) {
             $sparkPostMessage['content']['reply_to'] = $reply_to;
         }

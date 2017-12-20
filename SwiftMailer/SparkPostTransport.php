@@ -15,18 +15,11 @@ namespace Sctr\SparkPostSwiftMailer;
 use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 use SparkPost\SparkPost;
-use Swift_Attachment;
-use Swift_Events_EventDispatcher;
-use Swift_Events_EventListener;
-use Swift_Events_SendEvent;
-use Swift_Mime_Message;
-use Swift_MimePart;
-use Swift_Transport;
 
-class SparkPostTransport implements Swift_Transport
+class SparkPostTransport implements \Swift_Transport
 {
     /**
-     * @var Swift_Events_EventDispatcher
+     * @var \Swift_Events_EventDispatcher
      */
     protected $dispatcher;
 
@@ -40,12 +33,20 @@ class SparkPostTransport implements Swift_Transport
     protected $fromEmail;
 
     /**
-     * @param Swift_Events_EventDispatcher $dispatcher
+     * @param \Swift_Events_EventDispatcher $dispatcher
      */
-    public function __construct(Swift_Events_EventDispatcher $dispatcher)
+    public function __construct(\Swift_Events_EventDispatcher $dispatcher)
     {
         $this->dispatcher = $dispatcher;
         $this->apiKey     = null;
+    }
+
+    /**
+     * @return bool|void
+     */
+    public function ping()
+    {
+        return true;
     }
 
     /**
@@ -108,12 +109,12 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * @param Swift_Mime_SimpleMessage $message
-     * @param null                     $failedRecipients
+     * @param \Swift_Mime_SimpleMessage $message
+     * @param null                      $failedRecipients
      *
      * @return int Number of messages sent
      */
-    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
+    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
         $this->resultApi = null;
         if ($event = $this->dispatcher->createSendEvent($this, $message)) {
@@ -144,9 +145,9 @@ class SparkPostTransport implements Swift_Transport
 
         if ($event) {
             if ($sendCount > 0) {
-                $event->setResult(Swift_Events_SendEvent::RESULT_SUCCESS);
+                $event->setResult(\Swift_Events_SendEvent::RESULT_SUCCESS);
             } else {
-                $event->setResult(Swift_Events_SendEvent::RESULT_FAILED);
+                $event->setResult(\Swift_Events_SendEvent::RESULT_FAILED);
             }
 
             $this->dispatcher->dispatchEvent($event, 'sendPerformed');
@@ -156,9 +157,9 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * @param Swift_Events_EventListener $plugin
+     * @param \Swift_Events_EventListener $plugin
      */
-    public function registerPlugin(Swift_Events_EventListener $plugin)
+    public function registerPlugin(\Swift_Events_EventListener $plugin)
     {
         $this->dispatcher->bindEventListener($plugin);
     }
@@ -189,7 +190,7 @@ class SparkPostTransport implements Swift_Transport
      *
      * @return string
      */
-    protected function getMessagePrimaryContentType(Swift_Mime_Message $message)
+    protected function getMessagePrimaryContentType(\Swift_Mime_SimpleMessage $message)
     {
         $contentType = $message->getContentType();
 
@@ -213,13 +214,13 @@ class SparkPostTransport implements Swift_Transport
     /**
      * https://jsapi.apiary.io/apis/sparkpostapi/introduction/subaccounts-coming-to-an-api-near-you-in-april!.html.
      *
-     * @param Swift_Mime_Message $message
+     * @param \Swift_Mime_Message $message
      *
      * @throws \Swift_SwiftException
      *
      * @return array SparkPost Send Message
      */
-    public function getSparkPostMessage(Swift_Mime_Message $message)
+    public function getSparkPostMessage(\Swift_Mime_SimpleMessage $message)
     {
         $contentType   = $this->getMessagePrimaryContentType($message);
         $fromAddresses = $message->getFrom();
@@ -290,13 +291,13 @@ class SparkPostTransport implements Swift_Transport
         }
 
         foreach ($message->getChildren() as $child) {
-            if ($child instanceof Swift_Attachment) {
+            if ($child instanceof \Swift_Attachment) {
                 $attachments[] = [
                     'type'    => $child->getContentType(),
                     'name'    => $child->getFilename(),
                     'data'    => base64_encode($child->getBody()),
                 ];
-            } elseif ($child instanceof Swift_MimePart && $this->supportsContentType($child->getContentType())) {
+            } elseif ($child instanceof \Swift_MimePart && $this->supportsContentType($child->getContentType())) {
                 if ($child->getContentType() == 'text/html') {
                     $bodyHtml = $child->getBody();
                 } elseif ($child->getContentType() == 'text/plain') {

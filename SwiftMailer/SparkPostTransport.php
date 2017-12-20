@@ -108,12 +108,12 @@ class SparkPostTransport implements Swift_Transport
     }
 
     /**
-     * @param Swift_Mime_Message $message
-     * @param null               $failedRecipients
+     * @param Swift_Mime_SimpleMessage $message
+     * @param null                     $failedRecipients
      *
      * @return int Number of messages sent
      */
-    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
+    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
         $this->resultApi = null;
         if ($event = $this->dispatcher->createSendEvent($this, $message)) {

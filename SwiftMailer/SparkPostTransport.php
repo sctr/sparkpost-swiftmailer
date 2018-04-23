@@ -222,12 +222,9 @@ class SparkPostTransport implements \Swift_Transport
      */
     public function getSparkPostMessage(\Swift_Mime_SimpleMessage $message)
     {
-        $contentType   = $this->getMessagePrimaryContentType($message);
-        $fromAddresses = $message->getFrom();
-        $fromEmails    = array_keys($fromAddresses);
-
-        list($fromFirstEmail, $fromFirstName) = each($fromAddresses);
-        $this->fromEmail                      = $fromFirstEmail;
+        $contentType      = $this->getMessagePrimaryContentType($message);
+        $fromAddresses    = $message->getFrom();
+        $this->fromEmail  = key($fromAddresses);
 
         $toAddresses      = $message->getTo();
         $ccAddresses      = $message->getCc() ? $message->getCc() : [];
@@ -323,8 +320,8 @@ class SparkPostTransport implements \Swift_Transport
             'tags'       => $tags,
             'content'    => [
                 'from' => [
-                    'name'  => $fromFirstName,
-                    'email' => $fromFirstEmail,
+                    'name'  => $fromAddresses[$this->fromEmail],
+                    'email' => $this->fromEmail,
                 ],
                 'subject' => $message->getSubject(),
                 'html'    => $bodyHtml,
